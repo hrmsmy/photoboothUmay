@@ -1,296 +1,352 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UMAYY Photobooth</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <style>
-    /* --- Base Style --- */
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-    }
-
-    body {
-      font-family: 'Lexend', sans-serif;
-      /* Gradasi yang lebih menyatu (Deep Ocean Blue) */
-      background: radial-gradient(circle at center, #1e40af 0%, #1e3a8a 50%, #0f172a 100%);
-      min-height: 100vh;
-      color: #f8fafc;
-      padding: 40px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h1 { 
-      font-weight: 800;
-      font-size: 2.5rem;
-      margin-bottom: 30px; 
-      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      letter-spacing: -1px;
-    }
-
-    .main-container {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 40px;
-      width: 100%;
-      max-width: 1100px;
-      align-items: start;
-    }
-
-    /* --- Area Kamera --- */
-    .viewfinder {
-      background: #000;
-      border-radius: 30px;
-      border: 8px solid rgba(255, 255, 255, 0.05);
-      position: relative;
-      overflow: hidden;
-      aspect-ratio: 4/3;
-      /* Soft depth shadow */
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-    }
-
-    video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-
-    #countdown {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 9rem; font-weight: 800; color: #fbbf24;
-      text-shadow: 0 0 30px rgba(0,0,0,0.5);
-      z-index: 10;
-    }
-
-    .flash {
-      position: absolute; inset: 0; background: white;
-      opacity: 0; z-index: 20; pointer-events: none;
-    }
-
-    .flash-active { animation: flash-blink 0.4s; }
-    @keyframes flash-blink { 0% { opacity: 1; } 100% { opacity: 0; } }
-
-    /* --- Area Strip (Kanan) --- */
-    .right-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .strip-wrapper {
-      background: #ffffff;
-      padding: 15px;
-      border-radius: 4px; /* Sudut tajam khas kertas foto */
-      box-shadow: 
-        0 10px 15px -3px rgba(0,0,0,0.4),
-        0 4px 6px -2px rgba(0,0,0,0.2),
-        inset 0 0 20px rgba(0,0,0,0.05);
-      transform: rotate(1deg); /* Sedikit miring agar artistik */
-    }
-
-    .photo-strip {
-      background: #0f172a; /* Navy gelap untuk strip */
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 240px;
-    }
-
-    .photo-box {
-      width: 100%;
-      aspect-ratio: 4/3;
-      background: #1e293b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-    }
-
-    .photo-box img { width: 100%; height: 100%; object-fit: cover; }
-
-    .strip-footer {
-      margin-top: 20px;
-      padding-bottom: 10px;
-      text-align: center;
-      color: #94a3b8;
-    }
-
-    .strip-footer h2 {
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #38bdf8;
-    }
-
-    .strip-footer p {
-      font-size: 0.65rem;
-      margin-top: 5px;
-      opacity: 0.7;
-    }
-
-    /* --- Tombol --- */
-    .btn-group {
-      margin-top: 30px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    button {
-      font-family: 'Lexend', sans-serif;
-      padding: 18px;
-      border: none;
-      border-radius: 15px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 14px 0 rgba(0,0,0,0.3);
-    }
-
-    #start-btn { 
-      background: linear-gradient(to right, #3b82f6, #2563eb); 
-      color: white; 
-    }
-
-    #start-btn:hover { 
-      transform: translateY(-3px); 
-      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
-    }
-
-    #download-btn { 
-      background: #f8fafc; 
-      color: #1e293b; 
-    }
-
-    #download-btn:disabled { 
-      opacity: 0.2; 
-      cursor: not-allowed; 
-      transform: none; 
-    }
-
-    @media (max-width: 850px) { 
-      .main-container { grid-template-columns: 1fr; }
-      .strip-wrapper { transform: none; }
-    }
-  </style>
-</head>
-<body>
-
-  <h1>PHOTOBOOTH <span style="color: #38bdf8;">UMAYY</span></h1>
-
-  <div class="main-container">
-    
-    <div class="left-panel">
-      <div class="viewfinder">
-        <div id="countdown"></div>
-        <div class="flash" id="flash"></div>
-        <video id="webcam" autoplay playsinline></video>
-      </div>
-
-      <div class="btn-group">
-        <button id="start-btn">📸 START SESSION</button>
-      </div>
-    </div>
-
-    <div class="right-panel">
-      <div class="strip-wrapper" id="capture-area">
-        <div class="photo-strip">
-          <div class="photo-box" id="slot-0"></div>
-          <div class="photo-box" id="slot-1"></div>
-          <div class="photo-box" id="slot-2"></div>
-          
-          <div class="strip-footer">
-            <h2>RPL MEMORIES</h2>
-            <p id="date-label"></p>
-          </div>
-        </div>
-      </div>
-      <div style="width: 100%; max-width: 270px;">
-        <button id="download-btn" disabled>💾 DOWNLOAD STRIP</button>
-      </div>
-    </div>
-
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-  <script>
-    const video = document.getElementById('webcam');
-    const startBtn = document.getElementById('start-btn');
-    const downloadBtn = document.getElementById('download-btn');
-    const countdownEl = document.getElementById('countdown');
-    const flashEl = document.getElementById('flash');
-    const dateLabel = document.getElementById('date-label');
-
-    // Set Date
-    const now = new Date();
-    dateLabel.innerText = now.toLocaleDateString('id-ID', { 
-      day: '2-digit', month: 'short', year: 'numeric' 
-    }) + " • " + now.getHours() + ":" + now.getMinutes();
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => { video.srcObject = stream; });
-
-    async function takeSnapshot(index) {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0);
-      
-      flashEl.classList.remove('flash-active');
-      void flashEl.offsetWidth; 
-      flashEl.classList.add('flash-active');
-
-      const img = document.createElement('img');
-      img.src = canvas.toDataURL('image/png');
-
-      const slot = document.getElementById(`slot-${index}`);
-      slot.innerHTML = '';
-      slot.appendChild(img);
-    }
-
-    startBtn.addEventListener('click', async () => {
-      startBtn.disabled = true;
-      downloadBtn.disabled = true;
-
-      for(let i=0; i<3; i++) document.getElementById(`slot-${i}`).innerHTML = '';
-
-      for (let i = 0; i < 3; i++) {
-        for (let count = 3; count > 0; count--) {
-          countdownEl.innerText = count;
-          await new Promise(r => setTimeout(r, 800));
-        }
-        countdownEl.innerText = "📸";
-        await takeSnapshot(i);
-        await new Promise(r => setTimeout(r, 500));
-        countdownEl.innerText = "";
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Hiromasa Photobooth</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- Base Style --- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
       }
 
-      startBtn.disabled = false;
-      downloadBtn.disabled = false;
-    });
+      body {
+        font-family: "Lexend", sans-serif;
+        background: radial-gradient(
+          circle at center,
+          #1e40af 0%,
+          #1e3a8a 50%,
+          #0f172a 100%
+        );
+        min-height: 100vh;
+        color: #f8fafc;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-    downloadBtn.addEventListener('click', () => {
-      const target = document.getElementById('capture-area');
-      // Menggunakan scale 3 agar hasil download high resolution
-      html2canvas(target, { scale: 3, backgroundColor: null }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'lexend-strip.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
-    });
-  </script>
-</body>
+      h1 {
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        text-align: center;
+        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      /* --- Responsive Container --- */
+      .main-container {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr; /* Desktop: Sampingan */
+        gap: 30px;
+        width: 100%;
+        max-width: 1100px;
+        align-items: start;
+      }
+
+      /* Area Kamera */
+      .viewfinder {
+        background: #000;
+        border-radius: 20px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        width: 100%;
+      }
+
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #countdown {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 6rem;
+        font-weight: 800;
+        color: #fbbf24;
+        text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        z-index: 10;
+      }
+
+      .flash {
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0;
+        z-index: 20;
+        pointer-events: none;
+      }
+
+      .flash-active {
+        animation: flash-blink 0.4s;
+      }
+      @keyframes flash-blink {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /* Area Strip (Kanan) */
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+
+      .strip-wrapper {
+        background: #ffffff;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        /* Hilangkan miring di mobile agar rapi */
+        transform: rotate(1deg);
+      }
+
+      .photo-strip {
+        background: #0f172a;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 180px; /* Ukuran lebih pas untuk layar HP */
+      }
+
+      .photo-box {
+        width: 100%;
+        aspect-ratio: 4/3;
+        background: #1e293b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .photo-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .strip-footer {
+        margin-top: 15px;
+        text-align: center;
+        color: #94a3b8;
+      }
+
+      .strip-footer h2 {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #38bdf8;
+        letter-spacing: 1px;
+      }
+      .strip-footer p {
+        font-size: 0.5rem;
+        opacity: 0.6;
+      }
+
+      /* --- Tombol --- */
+      .btn-group {
+        margin-top: 20px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      button {
+        font-family: "Lexend", sans-serif;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.2s;
+        width: 100%;
+      }
+
+      #start-btn {
+        background: linear-gradient(to right, #3b82f6, #2563eb);
+        color: white;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+      }
+
+      #download-btn {
+        background: #f8fafc;
+        color: #1e293b;
+        margin-top: 15px;
+      }
+
+      #download-btn:disabled {
+        opacity: 0.2;
+      }
+
+      /* --- MEDIA QUERY UNTUK HP --- */
+      @media (max-width: 768px) {
+        .main-container {
+          grid-template-columns: 1fr; /* Jadi satu kolom */
+          gap: 20px;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        .strip-wrapper {
+          transform: none; /* Tegak lurus di HP agar enak dilihat */
+          margin-bottom: 20px;
+        }
+
+        .photo-strip {
+          width: 220px; /* Sedikit lebih lebar di HP saat mode vertikal */
+        }
+
+        .btn-group {
+          order: 2; /* Taruh tombol di bawah video */
+        }
+
+        .right-panel {
+          order: 3; /* Taruh hasil paling bawah */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HIROMASA<span style="color: #38bdf8">PHOTOBOOTH</span></h1>
+
+    <div class="main-container">
+      <div class="left-panel">
+        <div class="viewfinder">
+          <div id="countdown"></div>
+          <div class="flash" id="flash"></div>
+          <video id="webcam" autoplay playsinline></video>
+        </div>
+
+        <div class="btn-group">
+          <button id="start-btn" onclick="startSession()">
+            📸 MULAI POSE (3 FOTO)
+          </button>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="strip-wrapper" id="capture-area">
+          <div class="photo-strip">
+            <div class="photo-box" id="slot-0"></div>
+            <div class="photo-box" id="slot-1"></div>
+            <div class="photo-box" id="slot-2"></div>
+
+            <div class="strip-footer">
+              <h2>MEMORIES</h2>
+              <p id="date-label"></p>
+            </div>
+          </div>
+        </div>
+        <button id="download-btn" disabled onclick="downloadStrip()">
+          💾 SIMPAN KE GALERI
+        </button>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+      const video = document.getElementById("webcam");
+      const startBtn = document.getElementById("start-btn");
+      const downloadBtn = document.getElementById("download-btn");
+      const countdownEl = document.getElementById("countdown");
+      const flashEl = document.getElementById("flash");
+      const dateLabel = document.getElementById("date-label");
+
+      // Set Date
+      dateLabel.innerText = new Date()
+        .toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+        .toUpperCase();
+
+      // Kamera: Gunakan facingMode user untuk kamera depan HP
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { facingMode: "user" },
+        })
+        .then((stream) => {
+          video.srcObject = stream;
+        })
+        .catch((err) => alert("Izin kamera ditolak!"));
+
+      async function takeSnapshot(index) {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0);
+
+        flashEl.classList.add("flash-active");
+        setTimeout(() => flashEl.classList.remove("flash-active"), 400);
+
+        const slot = document.getElementById(`slot-${index}`);
+        slot.innerHTML = `<img src="${canvas.toDataURL("image/png")}">`;
+      }
+
+      async function startSession() {
+        startBtn.disabled = true;
+        downloadBtn.disabled = true;
+
+        for (let i = 0; i < 3; i++)
+          document.getElementById(`slot-${i}`).innerHTML = "";
+
+        for (let i = 0; i < 3; i++) {
+          for (let count = 3; count > 0; count--) {
+            countdownEl.innerText = count;
+            await new Promise((r) => setTimeout(r, 800));
+          }
+          countdownEl.innerText = "📸";
+          await takeSnapshot(i);
+          await new Promise((r) => setTimeout(r, 500));
+          countdownEl.innerText = "";
+        }
+
+        startBtn.disabled = false;
+        downloadBtn.disabled = false;
+      }
+
+      function downloadStrip() {
+        const target = document.getElementById("capture-area");
+        html2canvas(target, { scale: 2 }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = "my-photostrip.png";
+          link.href = canvas.toDataURL();
+          link.click();
+        });
+      }
+    </script>
+  </body>
 </html>
