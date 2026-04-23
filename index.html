@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -99,12 +99,8 @@
         animation: flash-blink 0.4s;
       }
       @keyframes flash-blink {
-        0% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0;
-        }
+        0% { opacity: 1; }
+        100% { opacity: 0; }
       }
 
       /* Area Strip (Kanan) */
@@ -120,7 +116,6 @@
         padding: 10px;
         border-radius: 4px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        /* Hilangkan miring di mobile agar rapi */
         transform: rotate(1deg);
       }
 
@@ -130,7 +125,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        width: 180px; /* Ukuran lebih pas untuk layar HP */
+        width: 180px;
       }
 
       .photo-box {
@@ -206,30 +201,21 @@
       /* --- MEDIA QUERY UNTUK HP --- */
       @media (max-width: 768px) {
         .main-container {
-          grid-template-columns: 1fr; /* Jadi satu kolom */
+          grid-template-columns: 1fr;
           gap: 20px;
         }
 
-        h1 {
-          font-size: 1.5rem;
-        }
+        h1 { font-size: 1.5rem; }
 
         .strip-wrapper {
-          transform: none; /* Tegak lurus di HP agar enak dilihat */
+          transform: none;
           margin-bottom: 20px;
         }
 
-        .photo-strip {
-          width: 220px; /* Sedikit lebih lebar di HP saat mode vertikal */
-        }
+        .photo-strip { width: 220px; }
 
-        .btn-group {
-          order: 2; /* Taruh tombol di bawah video */
-        }
-
-        .right-panel {
-          order: 3; /* Taruh hasil paling bawah */
-        }
+        .btn-group { order: 2; }
+        .right-panel { order: 3; }
       }
     </style>
   </head>
@@ -254,99 +240,4 @@
       <div class="right-panel">
         <div class="strip-wrapper" id="capture-area">
           <div class="photo-strip">
-            <div class="photo-box" id="slot-0"></div>
-            <div class="photo-box" id="slot-1"></div>
-            <div class="photo-box" id="slot-2"></div>
-
-            <div class="strip-footer">
-              <h2>MEMORIES</h2>
-              <p id="date-label"></p>
-            </div>
-          </div>
-        </div>
-        <button id="download-btn" disabled onclick="downloadStrip()">
-          💾 SIMPAN KE GALERI
-        </button>
-      </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-    <script>
-      const video = document.getElementById("webcam");
-      const startBtn = document.getElementById("start-btn");
-      const downloadBtn = document.getElementById("download-btn");
-      const countdownEl = document.getElementById("countdown");
-      const flashEl = document.getElementById("flash");
-      const dateLabel = document.getElementById("date-label");
-
-      // Set Date
-      dateLabel.innerText = new Date()
-        .toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-        .toUpperCase();
-
-      // Kamera: Gunakan facingMode user untuk kamera depan HP
-      navigator.mediaDevices
-        .getUserMedia({
-          video: { facingMode: "user" },
-        })
-        .then((stream) => {
-          video.srcObject = stream;
-        })
-        .catch((err) => alert("Izin kamera ditolak!"));
-
-      async function takeSnapshot(index) {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0);
-
-        flashEl.classList.add("flash-active");
-        setTimeout(() => flashEl.classList.remove("flash-active"), 400);
-
-        const slot = document.getElementById(`slot-${index}`);
-        slot.innerHTML = `<img src="${canvas.toDataURL("image/png")}">`;
-      }
-
-      async function startSession() {
-        startBtn.disabled = true;
-        downloadBtn.disabled = true;
-
-        for (let i = 0; i < 3; i++)
-          document.getElementById(`slot-${i}`).innerHTML = "";
-
-        for (let i = 0; i < 3; i++) {
-          for (let count = 3; count > 0; count--) {
-            countdownEl.innerText = count;
-            await new Promise((r) => setTimeout(r, 800));
-          }
-          countdownEl.innerText = "📸";
-          await takeSnapshot(i);
-          await new Promise((r) => setTimeout(r, 500));
-          countdownEl.innerText = "";
-        }
-
-        startBtn.disabled = false;
-        downloadBtn.disabled = false;
-      }
-
-      function downloadStrip() {
-        const target = document.getElementById("capture-area");
-        html2canvas(target, { scale: 2 }).then((canvas) => {
-          const link = document.createElement("a");
-          link.download = "my-photostrip.png";
-          link.href = canvas.toDataURL();
-          link.click();
-        });
-      }
-    </script>
-  </body>
-</html>
+            <div class="photo-box" id="slot
