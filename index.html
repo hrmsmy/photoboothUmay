@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Hiromasa Photobooth</title>
+    <title>Hiromasa Photobooth + Filters</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800&display=swap"
       rel="stylesheet"
@@ -22,12 +22,7 @@
 
       body {
         font-family: "Lexend", sans-serif;
-        background: radial-gradient(
-          circle at center,
-          #1e40af 0%,
-          #1e3a8a 50%,
-          #0f172a 100%
-        );
+        background: radial-gradient(circle at center, #1e40af 0%, #1e3a8a 50%, #0f172a 100%);
         min-height: 100vh;
         color: #f8fafc;
         padding: 20px;
@@ -44,10 +39,9 @@
         text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
       }
 
-      /* --- Responsive Container --- */
       .main-container {
         display: grid;
-        grid-template-columns: 1.2fr 0.8fr; /* Desktop: Sampingan */
+        grid-template-columns: 1.2fr 0.8fr;
         gap: 30px;
         width: 100%;
         max-width: 1100px;
@@ -71,39 +65,62 @@
         height: 100%;
         object-fit: cover;
         transform: scaleX(-1);
+        transition: filter 0.3s ease;
       }
+
+      /* Filter Classes */
+      .filter-none { filter: none; }
+      .filter-grayscale { filter: grayscale(1); }
+      .filter-sepia { filter: sepia(1); }
+      .filter-vintage { filter: sepia(0.5) contrast(1.2) brightness(0.9); }
+      .filter-warm { filter: sepia(0.3) saturate(1.4); }
+      .filter-cool { filter: hue-rotate(180deg) saturate(1.2); }
 
       #countdown {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 6rem;
-        font-weight: 800;
-        color: #fbbf24;
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 6rem; font-weight: 800; color: #fbbf24;
         text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         z-index: 10;
-      }
-
-      .flash {
-        position: absolute;
-        inset: 0;
-        background: white;
-        opacity: 0;
-        z-index: 20;
         pointer-events: none;
       }
 
-      .flash-active {
-        animation: flash-blink 0.4s;
-      }
-      @keyframes flash-blink {
-        0% { opacity: 1; }
-        100% { opacity: 0; }
+      .flash {
+        position: absolute; inset: 0; background: white;
+        opacity: 0; z-index: 20; pointer-events: none;
       }
 
-      /* Area Strip (Kanan) */
+      .flash-active { animation: flash-blink 0.4s; }
+      @keyframes flash-blink { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+      /* Filter Selector */
+      .filter-container {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px 0;
+        width: 100%;
+        scrollbar-width: none;
+      }
+      .filter-container::-webkit-scrollbar { display: none; }
+
+      .filter-opt {
+        flex: 0 0 auto;
+        padding: 8px 15px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: 0.2s;
+      }
+      .filter-opt.active {
+        background: #38bdf8;
+        border-color: #38bdf8;
+        color: #0f172a;
+      }
+
+      /* Area Strip */
       .right-panel {
         display: flex;
         flex-direction: column;
@@ -138,11 +155,7 @@
         overflow: hidden;
       }
 
-      .photo-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+      .photo-box img { width: 100%; height: 100%; object-fit: cover; }
 
       .strip-footer {
         margin-top: 15px;
@@ -150,20 +163,12 @@
         color: #94a3b8;
       }
 
-      .strip-footer h2 {
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: #38bdf8;
-        letter-spacing: 1px;
-      }
-      .strip-footer p {
-        font-size: 0.5rem;
-        opacity: 0.6;
-      }
+      .strip-footer h2 { font-size: 0.7rem; font-weight: 600; color: #38bdf8; letter-spacing: 1px; }
+      .strip-footer p { font-size: 0.5rem; opacity: 0.6; }
 
-      /* --- Tombol --- */
+      /* Tombol */
       .btn-group {
-        margin-top: 20px;
+        margin-top: 10px;
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -194,26 +199,12 @@
         margin-top: 15px;
       }
 
-      #download-btn:disabled {
-        opacity: 0.2;
-      }
+      #download-btn:disabled { opacity: 0.2; }
 
-      /* --- MEDIA QUERY UNTUK HP --- */
       @media (max-width: 768px) {
-        .main-container {
-          grid-template-columns: 1fr;
-          gap: 20px;
-        }
-
-        h1 { font-size: 1.5rem; }
-
-        .strip-wrapper {
-          transform: none;
-          margin-bottom: 20px;
-        }
-
+        .main-container { grid-template-columns: 1fr; gap: 20px; }
+        .strip-wrapper { transform: none; margin-bottom: 20px; }
         .photo-strip { width: 220px; }
-
         .btn-group { order: 2; }
         .right-panel { order: 3; }
       }
@@ -227,7 +218,16 @@
         <div class="viewfinder">
           <div id="countdown"></div>
           <div class="flash" id="flash"></div>
-          <video id="webcam" autoplay playsinline></video>
+          <video id="webcam" class="filter-none" autoplay playsinline></video>
+        </div>
+
+        <div class="filter-container">
+          <div class="filter-opt active" onclick="setFilter('none', this)">Normal</div>
+          <div class="filter-opt" onclick="setFilter('grayscale', this)">B&W</div>
+          <div class="filter-opt" onclick="setFilter('sepia', this)">Sepia</div>
+          <div class="filter-opt" onclick="setFilter('vintage', this)">Vintage</div>
+          <div class="filter-opt" onclick="setFilter('warm', this)">Warm</div>
+          <div class="filter-opt" onclick="setFilter('cool', this)">Cool</div>
         </div>
 
         <div class="btn-group">
@@ -240,4 +240,124 @@
       <div class="right-panel">
         <div class="strip-wrapper" id="capture-area">
           <div class="photo-strip">
-            <div class="photo-box" id="slot
+            <div class="photo-box" id="slot-0"></div>
+            <div class="photo-box" id="slot-1"></div>
+            <div class="photo-box" id="slot-2"></div>
+
+            <div class="strip-footer">
+              <h2>MEMORIES</h2>
+              <p id="date-label"></p>
+            </div>
+          </div>
+        </div>
+        <button id="download-btn" disabled onclick="downloadStrip()">
+          💾 SIMPAN KE GALERI
+        </button>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+      const video = document.getElementById("webcam");
+      const startBtn = document.getElementById("start-btn");
+      const downloadBtn = document.getElementById("download-btn");
+      const countdownEl = document.getElementById("countdown");
+      const flashEl = document.getElementById("flash");
+      const dateLabel = document.getElementById("date-label");
+      let currentFilter = 'none';
+
+      // Set Date
+      dateLabel.innerText = new Date().toLocaleDateString("id-ID", {
+          day: "2-digit", month: "short", year: "numeric",
+      }).toUpperCase();
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then((stream) => { video.srcObject = stream; })
+        .catch((err) => alert("Izin kamera ditolak!"));
+
+      function setFilter(filter, el) {
+        // Hapus class aktif lama
+        document.querySelectorAll('.filter-opt').forEach(opt => opt.classList.remove('active'));
+        el.classList.add('active');
+        
+        // Ganti filter di video
+        video.className = 'filter-' + filter;
+        currentFilter = filter;
+      }
+
+      async function takeSnapshot(index) {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const targetWidth = 800;
+        const targetHeight = 600;
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        const videoAspect = video.videoWidth / video.videoHeight;
+        const targetAspect = targetWidth / targetHeight;
+
+        let sx, sy, sWidth, sHeight;
+        if (videoAspect > targetAspect) {
+          sHeight = video.videoHeight;
+          sWidth = video.videoHeight * targetAspect;
+          sx = (video.videoWidth - sWidth) / 2;
+          sy = 0;
+        } else {
+          sWidth = video.videoWidth;
+          sHeight = video.videoWidth / targetAspect;
+          sx = 0;
+          sy = (video.videoHeight - sHeight) / 2;
+        }
+
+        // Terapkan Filter ke Canvas agar foto yang tersimpan juga berfilter
+        if (currentFilter === 'grayscale') ctx.filter = 'grayscale(100%)';
+        else if (currentFilter === 'sepia') ctx.filter = 'sepia(100%)';
+        else if (currentFilter === 'vintage') ctx.filter = 'sepia(50%) contrast(120%) brightness(90%)';
+        else if (currentFilter === 'warm') ctx.filter = 'sepia(30%) saturate(140%)';
+        else if (currentFilter === 'cool') ctx.filter = 'hue-rotate(180deg) saturate(120%)';
+        else ctx.filter = 'none';
+
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+
+        flashEl.classList.add("flash-active");
+        setTimeout(() => flashEl.classList.remove("flash-active"), 400);
+
+        const slot = document.getElementById(`slot-${index}`);
+        slot.innerHTML = `<img src="${canvas.toDataURL("image/png")}" style="width:100%; height:100%; object-fit:cover;">`;
+      }
+
+      async function startSession() {
+        startBtn.disabled = true;
+        downloadBtn.disabled = true;
+        for (let i = 0; i < 3; i++) document.getElementById(`slot-${i}`).innerHTML = "";
+
+        for (let i = 0; i < 3; i++) {
+          for (let count = 3; count > 0; count--) {
+            countdownEl.innerText = count;
+            await new Promise((r) => setTimeout(r, 800));
+          }
+          countdownEl.innerText = "📸";
+          await takeSnapshot(i);
+          await new Promise((r) => setTimeout(r, 500));
+          countdownEl.innerText = "";
+        }
+        startBtn.disabled = false;
+        downloadBtn.disabled = false;
+      }
+
+      function downloadStrip() {
+        const target = document.getElementById("capture-area");
+        html2canvas(target, { scale: 3 }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = "hiromasa-strip.png";
+          link.href = canvas.toDataURL();
+          link.click();
+        });
+      }
+    </script>
+  </body>
+</html>
